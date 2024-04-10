@@ -1,0 +1,15 @@
+*.csv
+*.tsv
+*.dta
+*.txt
+*.dat
+*.[rR]data
+*.[rR]data
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+*.Rmd
+data
+environment
