@@ -131,7 +131,7 @@ if (!file.exists('WM_adapt/model_fits/Exp1_linear_fit_group_mean.rds')) {
                    warmup = 2000,
                    chains = 4,
                    control = list(adapt_delta = 0.8))
-  saveRDS(fit_linear,file = paste0('WM_adapt/model_fits/Exp1_linear_fit_group_mean.rds'))
+  saveRDS(fit_linear,file = 'WM_adapt/model_fits/Exp1_linear_fit_group_mean.rds')
 } else {
   fit_linear = readRDS('WM_adapt/model_fits/Exp1_linear_fit_group_mean.rds')
 }
