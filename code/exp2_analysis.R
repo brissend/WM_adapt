@@ -13,7 +13,7 @@ LOCAL = Sys.getenv("LOCAL")
 setwd(LOCAL)
 
 # load data
-subs = paste0('WM_adapt/data/exp2/',list.files('WM_adapt/data/exp2/'))
+subs = paste0('WM_adapt/data/exp2/', list.files('WM_adapt/data/exp2/', pattern = '^data'))
 
 # row numbers for WM-fixed and WM-random trials for pavlovia output files (difficult to parse via other means)
 fixed_trial_nums =   c(4,   8,  12,  16,  20,  24,  28,  32,  36,  40,  44,  48,  52,  56,  60,  64,  68,  72,  76,  80,  84,  88,  92,  96,
@@ -91,10 +91,30 @@ for (s in seq_along(subs)) {
 grpdf = do.call(rbind, grpdf) 
 grprandf = do.call(rbind,grprandf)
 
+# save WM-fixed and WM-random group data frame
+if (!file.exists('WM_adapt/data/exp2/exp2_group_fixed.csv')) {
+  write.csv(grpdf,
+            file = 'WM_adapt/data/exp2/exp2_group_fixed.csv',
+            row.names = F)
+}
+if (!file.exists('WM_adapt/data/exp2/exp2_group_random.csv')) {
+  write.csv(grpdf,
+            file = 'WM_adapt/data/exp2/exp2_group_random.csv',
+            row.names = F)
+}
+
+
 # compute group average WM-fixed recall
 mndf = grpdf %>% group_by(x) %>% dplyr::summarize(y = mean(y,na.rm=T),n = n()) %>% filter(n > 1)
 mndf$block = factor(c(rep(1,25),rep(2:4,each=20),rep(5,25)))
 mndf$adapt = factor(c(rep('pre-adapt',25),rep('adapt',60),rep('post-adapt',25)))
+
+# save group average WM-fixed recall
+if (!file.exists('WM_adapt/data/exp2/exp2_group_mean_fixed.csv')) {
+  write.csv(mndf,
+            file = 'WM_adapt/data/exp2/exp2_group_mean_fixed.csv',
+            row.names = F)
+}
 
 # adaptation magnitude (bootstrap SE)
 bootmu = function(sample,i) mean(sample[i])
