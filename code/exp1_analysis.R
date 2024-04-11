@@ -100,14 +100,12 @@ grprandf = do.call(rbind,grprandf)
 if (!file.exists('WM_adapt/data/exp1/exp1_group_fixed.csv')) {
   write.csv(grpdf,
             file = 'WM_adapt/data/exp1/exp1_group_fixed.csv',
-            row.names = F, 
-            col.names = T)
+            row.names = F)
 }
 if (!file.exists('WM_adapt/data/exp1/exp1_group_random.csv')) {
-  write.csv(grpdf,
+  write.csv(grprandf,
             file = 'WM_adapt/data/exp1/exp1_group_random.csv',
-            row.names = F, 
-            col.names = T)
+            row.names = F)
 }
 
 # compute group average WM-fixed recall
