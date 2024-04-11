@@ -110,7 +110,7 @@ set.seed(1111)
 cor(adaptpct,washoutpct)
 correlationBF(adaptpct,washoutpct)
 
-# Bayes factor analysis comparing 1st and last block
+# Bayes factor analysis comparing pre-adapt block and last adaptation block
 set.seed(1111)
 df_pre_vs_adapt = filter(grpdf,block %in% c(1,4)) %>% droplevels()
 df_pre_vs_adapt$block = factor(df_pre_vs_adapt$block)
