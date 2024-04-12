@@ -20,13 +20,13 @@ fit = readRDS('WM_adapt/model_fits/Exp1_expdecay_fit_group_mean.rds')
 fitdf = data.frame()
 for (x in seq(min(mndf$x),max(mndf$x),by = 20)) {
   
-  tmp = fitted_draws(fit,newdata = data.frame(x = x),n=5000)
+  tmp = epred_draws(fit,newdata = data.frame(x = x), ndraws = 5000)
   
   fitdf = rbind(fitdf,
                 data.frame(x = x, 
-                           y = mean(tmp$.value),
-                           y_low = bayestestR::hdi(tmp$.value,ci = 0.95)$CI_low,
-                           y_hi = bayestestR::hdi(tmp$.value,ci = 0.95)$CI_high))
+                           y = mean(tmp$.epred),
+                           y_low = bayestestR::hdi(tmp$.epred,ci = 0.95)$CI_low,
+                           y_hi = bayestestR::hdi(tmp$.epred,ci = 0.95)$CI_high))
 }
 
 # plot
