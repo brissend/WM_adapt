@@ -15,7 +15,7 @@ setwd(LOCAL)
 # load data
 subs = paste0('WM_adapt/data/exp1/',list.files('WM_adapt/data/exp1/',pattern = '^data'))
 
-# row numbers for WM-fixed and WM-random trials for pavlovia output files (difficult to parse via other means)
+# trial numbers for WM-fixed and WM-random trials for pavlovia output files (difficult to parse via other means)
 fixed_trial_nums =   c( 13, 26, 39, 52, 65, 78, 91, 104, 117, 130, 143, 156, 169, 182, 195, 208, 221, 
                         234, 247, 260, 273, 286, 299, 312, 325, 338, 351, 364, 377, 390, 403, 416,
                         429, 442, 455, 468, 481, 494, 507, 520, 533, 546, 559, 572, 585,  598,  611,  
