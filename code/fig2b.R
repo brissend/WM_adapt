@@ -11,7 +11,7 @@ if (!file.exists('WM_adapt/data/exp1/exp1_group_random.csv')) {
 }
 grprandf = read.csv('WM_adapt/data/exp1/exp1_group_random.csv')
 
-# Bin WM-random location
+# bin WM-random location
 ranbindf = grprandf %>% 
   mutate(bin = cut(memTargetPos,breaks = c(-Inf,seq(0.15,0.65,0.1),Inf))) %>%
   group_by(subject,block,bin) %>% 
@@ -23,6 +23,7 @@ blockdiffdf = ranbindf %>% filter(block %in% c('1','5')) %>%
   mutate(ydiff = `5` - `1`)
 levels(blockdiffdf$bin) = c('-0.4','-0.3','-0.2','-0.1','0','+0.1','+0.2')
 
+# plot
 ggplot(blockdiffdf,aes(x = bin,y = ydiff,color = bin)) + 
   geom_hline(yintercept = 0,linetype = 'dashed') + 
   stat_summary(fun=mean, geom="point", shape=23, size=2, color="red", fill="red") + 
