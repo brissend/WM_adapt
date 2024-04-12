@@ -42,7 +42,7 @@ if (!file.exists('WM_adapt/model_fits/Exp2_postadapt_linear_fit_group_mean.rds')
                      warmup = 2000,
                      chains = 4,
                      control = list(adapt_delta = 0.8))
-  saveRDS(fit_preadapt,file = 'WM_adapt/model_fits/Exp2_postadapt_linear_fit_group_mean.rds')
+  saveRDS(fit_postadapt,file = 'WM_adapt/model_fits/Exp2_postadapt_linear_fit_group_mean.rds')
   
 } else {
   fit_postadapt = readRDS('WM_adapt/model_fits/Exp2_postadapt_linear_fit_group_mean.rds')
@@ -54,13 +54,13 @@ minval = 4
 maxval = max(filter(mndf,phase == 'adapt')$trial)
 for (x in seq(minval,maxval,length.out = 100)) {
   
-  tmp = fitted_draws(fit_adapt,newdata = data.frame(trial = x),n=5000)
+  tmp = epred_draws(fit_adapt,newdata = data.frame(trial = x), ndraws = 5000)
   
   fitdf = rbind(fitdf,
                 data.frame(x = x + 100,  
-                           y = mean(tmp$.value),
-                           y_low = bayestestR::hdi(tmp$.value,ci = 0.95)$CI_low,
-                           y_hi = bayestestR::hdi(tmp$.value,ci = 0.95)$CI_high,
+                           y = mean(tmp$.epred),
+                           y_low = bayestestR::hdi(tmp$.epred,ci = 0.95)$CI_low,
+                           y_hi = bayestestR::hdi(tmp$.epred,ci = 0.95)$CI_high,
                            phase = 'Adapt'))
 }
 
@@ -69,13 +69,13 @@ minval = min(filter(mndf,phase == 'pre-adapt')$x)
 maxval = max(filter(mndf,phase == 'pre-adapt')$x)
 for (x in seq(minval,maxval,length.out = 20)) {
   
-  tmp = fitted_draws(fit_preadapt,newdata = data.frame(x = x),n=5000)
+  tmp = epred_draws(fit_preadapt,newdata = data.frame(x = x), ndraws = 5000)
   
   fitdf = rbind(fitdf,
                 data.frame(x = x, 
-                           y = mean(tmp$.value),
-                           y_low = bayestestR::hdi(tmp$.value,ci = 0.95)$CI_low,
-                           y_hi = bayestestR::hdi(tmp$.value,ci = 0.95)$CI_high,
+                           y = mean(tmp$.epred),
+                           y_low = bayestestR::hdi(tmp$.epred,ci = 0.95)$CI_low,
+                           y_hi = bayestestR::hdi(tmp$.epred,ci = 0.95)$CI_high,
                            phase = 'Pre-Adapt'))
 }
 
@@ -83,30 +83,29 @@ minval = min(filter(mndf,phase == 'post-adapt')$x) - 880
 maxval = max(filter(mndf,phase == 'post-adapt')$x) - 880
 for (x in seq(minval,maxval,length.out = 20)) {
   
-  tmp = fitted_draws(fit_postadapt,newdata = data.frame(trial_post = x),n=5000)
+  tmp = epred_draws(fit_postadapt,newdata = data.frame(trial_post = x), ndraws = 5000)
   
   fitdf = rbind(fitdf,
                 data.frame(x = x + 880, 
-                           y = mean(tmp$.value),
-                           y_low = bayestestR::hdi(tmp$.value,ci = 0.95)$CI_low,
-                           y_hi = bayestestR::hdi(tmp$.value,ci = 0.95)$CI_high,
+                           y = mean(tmp$.epred),
+                           y_low = bayestestR::hdi(tmp$.epred,ci = 0.95)$CI_low,
+                           y_hi = bayestestR::hdi(tmp$.epred,ci = 0.95)$CI_high,
                            phase = 'Post-Adapt'))
 }
 
 
 mndf$phase = factor(mndf$phase, levels = c('pre-adapt','adapt','post-adapt'))
-plt = ggplot(mndf,aes(x = x, y = y,group = phase )) + 
+mndf$block = factor(mndf$block)
+ggplot(mndf,aes(x = x, y = y,group = phase )) + 
   geom_point(aes(color = block,shape = phase)) + 
   geom_ribbon(data = fitdf, alpha = 0.25,color = NA,aes(ymin = y_low, ymax = y_hi)) + 
   geom_line(data = fitdf,size = 1,aes(x = x, y = y)) + 
   geom_hline(yintercept = 0.5,linetype = 'dashed') + 
-  #geom_hline(yintercept = 0.0,linetype = 'dashed') + 
   scale_color_viridis(discrete = T ,begin = 0.05,end = 0.95) + 
   scale_shape_discrete(name = 'Phase') + 
   scale_x_continuous(breaks= seq(0,1000,by=250)) + 
   scale_y_continuous(breaks = seq(0.517,0.449,by = -0.017),labels = paste0(seq(10,-30,by=-10),'%')) + 
   coord_cartesian(ylim = c(0.447,0.521)) + 
-  labs(color = 'Block',y = 'Reported Location (% of Backstep)', x = 'Trial') +
+  labs(color = 'Block',y = 'Recall Location (% of Backstep)', x = 'Trial') +
   theme_classic() +
   theme(legend.position = 'none')
-plt
