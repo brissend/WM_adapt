@@ -15,7 +15,7 @@ setwd(LOCAL)
 # load data
 subs = paste0('WM_adapt/data/exp2/', list.files('WM_adapt/data/exp2/', pattern = '^data'))
 
-# row numbers for WM-fixed and WM-random trials for pavlovia output files (difficult to parse via other means)
+# trial numbers for WM-fixed and WM-random trials for pavlovia output files (difficult to parse via other means)
 fixed_trial_nums =   c(4,   8,  12,  16,  20,  24,  28,  32,  36,  40,  44,  48,  52,  56,  60,  64,  68,  72,  76,  80,  84,  88,  92,  96,
                        100, 113, 126, 139, 152, 165, 178, 191, 204, 217, 230, 243, 256, 269, 282, 295, 308, 321, 334, 347, 360, 373, 386, 399,
                        412, 425, 438, 451, 464, 477, 490, 503, 516, 529, 542, 555, 568, 581, 594, 607, 620, 633, 646, 659, 672, 685, 698, 711,
@@ -57,7 +57,7 @@ for (s in seq_along(subs)) {
                           subdf$memTargetPos[subdf$trialCounter %in% random_trial_nums],
                         x = random_trial_nums,
                         block = factor(c(rep(1,75),rep(2:4,each=20),rep(5,75))),
-                        adapt = factor(c(rep('pre-adapt',75),rep('adapt',60),rep('post-adapt',75))),
+                        phase = factor(c(rep('pre-adapt',75),rep('adapt',60),rep('post-adapt',75))),
                         memTargetPos = subdf$memTargetPos[subdf$trialCounter %in% random_trial_nums])
   
   # data quality check
@@ -98,7 +98,7 @@ if (!file.exists('WM_adapt/data/exp2/exp2_group_fixed.csv')) {
             row.names = F)
 }
 if (!file.exists('WM_adapt/data/exp2/exp2_group_random.csv')) {
-  write.csv(grpdf,
+  write.csv(grprandf,
             file = 'WM_adapt/data/exp2/exp2_group_random.csv',
             row.names = F)
 }
@@ -107,14 +107,7 @@ if (!file.exists('WM_adapt/data/exp2/exp2_group_random.csv')) {
 # compute group average WM-fixed recall
 mndf = grpdf %>% group_by(x) %>% dplyr::summarize(y = mean(y,na.rm=T),n = n()) %>% filter(n > 1)
 mndf$block = factor(c(rep(1,25),rep(2:4,each=20),rep(5,25)))
-mndf$adapt = factor(c(rep('pre-adapt',25),rep('adapt',60),rep('post-adapt',25)))
-
-# save group average WM-fixed recall
-if (!file.exists('WM_adapt/data/exp2/exp2_group_mean_fixed.csv')) {
-  write.csv(mndf,
-            file = 'WM_adapt/data/exp2/exp2_group_mean_fixed.csv',
-            row.names = F)
-}
+mndf$phase = factor(c(rep('pre-adapt',25),rep('adapt',60),rep('post-adapt',25)))
 
 # adaptation magnitude (bootstrap SE)
 bootmu = function(sample,i) mean(sample[i])
@@ -178,6 +171,13 @@ bf_full/bf_int
 mndf$adaptfit = c(rep(1,85),rep(0,25))
 mndf$trial = mndf$x - 100 
 mndf$trial[1:25] = 0 # treat all pre-adapt trials as trial 0
+
+# save group average WM-fixed recall
+if (!file.exists('WM_adapt/data/exp2/exp2_group_mean_fixed.csv')) {
+  write.csv(mndf,
+            file = 'WM_adapt/data/exp2/exp2_group_mean_fixed.csv',
+            row.names = F)
+}
 
 # linear fit
 if (!file.exists('WM_adapt/model_fits/Exp1_linear_fit_group_mean.rds')) {
