@@ -40,7 +40,7 @@ ggplot(mndf,aes(x = x, y = y )) +
   scale_x_continuous(breaks = c(0,250,500,750,1000,1250)) + 
   scale_y_continuous(breaks = seq(0.517,0.449,by = -0.017),labels = paste0(seq(10,-30,by=-10),'%')) + 
   coord_cartesian(ylim = c(0.447,0.517)) + 
-  labs(color = 'Block',y = 'Reported Location (% of Backstep)', x = 'Trial') +
+  labs(color = 'Block',y = 'Recall Location (% of Backstep)', x = 'Trial') +
   theme_classic() +
   theme(legend.position = 'none')
 
