@@ -28,7 +28,7 @@ ggplot(blockdiffdf,aes(x = bin,y = ydiff,color = bin)) +
   geom_hline(yintercept = 0,linetype = 'dashed') + 
   stat_summary(fun=mean, geom="point", shape=23, size=2, color="red", fill="red") + 
   stat_summary(fun.data = "mean_cl_boot", size = 1) + 
-  labs( y = 'Recall Error (Block 4 - Block 1)',x = 'WM Random Location Bin (Offset Relative to Adapted Location)') + 
+  labs( y = 'Recall Error (Block 4 - Block 1)',x = 'WM Random Location Bin Distance') + 
   scale_y_continuous(breaks = seq(0.017,-0.051,by = -0.017),labels = paste0(seq(10,-30,by=-10),'%')) +
   coord_cartesian(ylim = c(-0.053 , 0.021)) + 
   theme_classic() + 
