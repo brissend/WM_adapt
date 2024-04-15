@@ -1,1 +1,1 @@
-# Errors of attention adaptvely warp spatial memory
+# Errors of attention adaptively warp spatial memory
