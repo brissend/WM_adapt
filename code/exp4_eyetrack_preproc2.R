@@ -34,6 +34,10 @@ gaze = do.call(rbind,gaze)
 saccade = do.call(rbind,saccade)
 fixation = do.call(rbind,fixation)
 
+# ===================
+# gaze preprocessing
+# ===================
+
 # identify and extend blinks based on the velocity of pupil size changes
 gaze$pupil_na = gaze$pupil
 gaze$pupil_na[gaze$pupil_na == 0] = NA
@@ -63,6 +67,10 @@ gaze_fixed = gaze %>%
 gaze_random = gaze %>% 
   filter(Condition == 'memory_random')
 
+# remove ITI from beginning of memory trials (gaze data for wm trials included 1000 ms ITI prior to the trial start cue)
+gaze_fixed = filter(gaze_fixed, time >= 1000) %>% mutate(time = time - 1000)
+gaze_random = filter(gaze_random, time >= 1000) %>% mutate(time = time - 1000)
+
 # drift correction each trial 
 # (perform separately for each condition due to different timing)
 # compute median gaze position for first 200 ms of trial (100 ms trial start cue + 100 ms fixation)
@@ -80,9 +88,9 @@ gaze_adapt = gaze_adapt %>%
                 y_interp_driftcorr = y_interp - ybaseline + center[2]) %>%
   dplyr::arrange(subject, trial, time)
 
-# wm-fixed; gaze data for wm trials included 1000 ms ITI prior to the trial start cue
+# wm-fixed median gaze
 gaze_fixed = gaze_fixed %>%
-  filter(time > 1000,time < 1200) %>%
+  filter(time > 0,time < 200) %>%
   group_by(ID, trial) %>%
   dplyr::summarise(xbaseline = median(x_interp,na.rm = T),
                    ybaseline = median(y_interp, na.rm = T)) %>%
@@ -95,9 +103,9 @@ gaze_fixed = gaze_fixed %>%
                 y_interp_driftcorr = y_interp - ybaseline + center[2]) %>%
   dplyr::arrange(subject, trial, time)
 
-# wm-random
+# wm-random median gaze
 gaze_random = gaze_random %>%
-  filter(time > 1000,time < 1200) %>%
+  filter(time > 0,time < 200) %>%
   group_by(ID, trial) %>%
   dplyr::summarise(xbaseline = median(x_interp,na.rm = T),
                    ybaseline = median(y_interp, na.rm = T)) %>%
@@ -125,3 +133,137 @@ gaze_random$xdva_interp = (gaze_random$x_interp - center[1]) / ppd
 gaze_random$ydva_interp = ((gaze_random$y_interp - center[2]) / ppd) * -1
 gaze_random$x_interp_driftcorr_dva = (gaze_random$x_interp_driftcorr - center[1]) / ppd
 gaze_random$y_interp_driftcorr_dva = ((gaze_random$y_interp_driftcorr - center[2]) / ppd) * -1
+
+# convert cartesian coordinates to polar coordinates
+gaze_adapt = gaze_adapt %>%
+  mutate(r = useful::cart2pol(x_interp_driftcorr_dva,y_interp_driftcorr_dva,degrees = T)$r,
+         theta = useful::cart2pol(x_interp_driftcorr_dva,y_interp_driftcorr_dva,degrees = T)$theta %% 360)
+
+gaze_fixed = gaze_fixed %>%
+  mutate(r = useful::cart2pol(x_interp_driftcorr_dva,y_interp_driftcorr_dva,degrees = T)$r,
+         theta = useful::cart2pol(x_interp_driftcorr_dva,y_interp_driftcorr_dva,degrees = T)$theta %% 360)
+
+gaze_random = gaze_random %>%
+  mutate(r = useful::cart2pol(x_interp_driftcorr_dva,y_interp_driftcorr_dva,degrees = T)$r,
+         theta = useful::cart2pol(x_interp_driftcorr_dva,y_interp_driftcorr_dva,degrees = T)$theta %% 360)
+
+# save preprocessed gaze data
+write_csv(gaze_adapt,file = file.path(datadir,'exp4_gaze_att.csv'))
+write_csv(gaze_fixed,file = file.path(datadir,'exp4_gaze_fixed.csv'))
+write_csv(gaze_random,file = file.path(datadir,'exp4_gaze_random.csv'))
+
+# ======================
+# saccade preprocessing
+# ======================
+saccade_adapt = saccade %>%
+  filter(Condition == 'adapt')
+saccade_fixed = saccade %>%
+  filter(Condition == 'memory')
+saccade_random = saccade %>% 
+  filter(Condition == 'memory_random')
+
+# remove ITI from beginning of memory trials
+saccade_fixed = filter(saccade_fixed, onset >= 1000) %>% mutate(onset = onset - 1000,
+                                                                offset = offset - 1000)
+saccade_random = filter(saccade_random, onset >= 1000) %>% mutate(onset = onset - 1000,
+                                                                  offset = offset - 1000)
+
+# drift correction
+# att-error
+saccade_adapt_baseline = gaze_adapt %>%
+  filter(time > 0,time < 200) %>%
+  group_by(ID, trial) %>%
+  dplyr::summarise(xbaseline = median(x_interp,na.rm = T),
+                   ybaseline = median(y_interp, na.rm = T))
+
+saccade_adapt = left_join(saccade_adapt, saccade_adapt_baseline,by = c('ID','trial')) %>%
+  dplyr::mutate(startx_driftcorr = startx - xbaseline + center[1],
+                starty_driftcorr = starty - ybaseline + center[2],
+                endx_driftcorr = endx - xbaseline + center[1],
+                endy_driftcorr = endy - ybaseline + center[2]) %>%
+  dplyr::arrange(ID, trial, onset)
+
+# wm-fixed
+saccade_fixed_baseline = gaze_fixed %>%
+  filter(time > 0,time < 200) %>%
+  group_by(ID, trial) %>%
+  dplyr::summarise(xbaseline = median(x_interp,na.rm = T),
+                   ybaseline = median(y_interp, na.rm = T))
+
+saccade_fixed = left_join(saccade_fixed, saccade_fixed_baseline,by = c('ID','trial')) %>%
+  dplyr::mutate(startx_driftcorr = startx - xbaseline + center[1],
+                starty_driftcorr = starty - ybaseline + center[2],
+                endx_driftcorr = endx - xbaseline + center[1],
+                endy_driftcorr = endy - ybaseline + center[2]) %>%
+  dplyr::arrange(ID, trial, onset)
+
+# wm-random
+saccade_random_baseline = gaze_random %>%
+  filter(time > 0,time < 200) %>%
+  group_by(ID, trial) %>%
+  dplyr::summarise(xbaseline = median(x_interp,na.rm = T),
+                   ybaseline = median(y_interp, na.rm = T))
+
+saccade_random = left_join(saccade_random, saccade_random_baseline,by = c('ID','trial')) %>%
+  dplyr::mutate(startx_driftcorr = startx - xbaseline + center[1],
+                starty_driftcorr = starty - ybaseline + center[2],
+                endx_driftcorr = endx - xbaseline + center[1],
+                endy_driftcorr = endy - ybaseline + center[2]) %>%
+  dplyr::arrange(ID, trial, onset)
+
+
+# convert x and y coords to degrees of visual angle
+# att-error
+saccade_adapt$startx_driftcorr_dva = (saccade_adapt$startx_driftcorr - center[1]) / ppd
+saccade_adapt$starty_driftcorr_dva = ((saccade_adapt$starty_driftcorr - center[2]) / ppd) * -1
+saccade_adapt$endx_driftcorr_dva = (saccade_adapt$endx_driftcorr - center[1]) / ppd
+saccade_adapt$endy_driftcorr_dva = ((saccade_adapt$endy_driftcorr - center[2]) / ppd) * -1
+saccade_adapt$diffx_driftcorr_dva = saccade_adapt$endx_driftcorr_dva - saccade_adapt$startx_driftcorr_dva
+saccade_adapt$diffy_driftcorr_dva = saccade_adapt$endy_driftcorr_dva - saccade_adapt$starty_driftcorr_dva
+
+# wm-fixed
+saccade_fixed$startx_driftcorr_dva = (saccade_fixed$startx_driftcorr - center[1]) / ppd
+saccade_fixed$starty_driftcorr_dva = ((saccade_fixed$starty_driftcorr - center[2]) / ppd) * -1
+saccade_fixed$endx_driftcorr_dva = (saccade_fixed$endx_driftcorr - center[1]) / ppd
+saccade_fixed$endy_driftcorr_dva = ((saccade_fixed$endy_driftcorr - center[2]) / ppd) * -1
+saccade_fixed$diffx_driftcorr_dva = saccade_fixed$endx_driftcorr_dva - saccade_fixed$startx_driftcorr_dva
+saccade_fixed$diffy_driftcorr_dva = saccade_fixed$endy_driftcorr_dva - saccade_fixed$starty_driftcorr_dva
+
+# wm-random
+saccade_random$startx_driftcorr_dva = (saccade_random$startx_driftcorr - center[1]) / ppd
+saccade_random$starty_driftcorr_dva = ((saccade_random$starty_driftcorr - center[2]) / ppd) * -1
+saccade_random$endx_driftcorr_dva = (saccade_random$endx_driftcorr - center[1]) / ppd
+saccade_random$endy_driftcorr_dva = ((saccade_random$endy_driftcorr - center[2]) / ppd) * -1
+saccade_random$diffx_driftcorr_dva = saccade_random$endx_driftcorr_dva - saccade_random$startx_driftcorr_dva
+saccade_random$diffy_driftcorr_dva = saccade_random$endy_driftcorr_dva - saccade_random$starty_driftcorr_dva
+
+# convert start and end points to polar coordinates
+# att-error
+saccade_adapt = saccade_adapt %>%
+  mutate(startr = useful::cart2pol(startx_driftcorr_dva,starty_driftcorr_dva,degrees = T)$r,
+         starttheta = useful::cart2pol(startx_driftcorr_dva,starty_driftcorr_dva,degrees = T)$theta %% 360,
+         endr = useful::cart2pol(endx_driftcorr_dva,endy_driftcorr_dva,degrees = T)$r,
+         endtheta = useful::cart2pol(endx_driftcorr_dva,endy_driftcorr_dva,degrees = T)$theta %% 360,
+         diffr = useful::cart2pol(diffx_driftcorr_dva,diffy_driftcorr_dva,degrees = T)$r,
+         difftheta = useful::cart2pol(diffx_driftcorr_dva,diffy_driftcorr_dva,degrees = T)$theta %% 360)
+
+saccade_fixed = saccade_fixed %>%
+  mutate(startr = useful::cart2pol(startx_driftcorr_dva,starty_driftcorr_dva,degrees = T)$r,
+         starttheta = useful::cart2pol(startx_driftcorr_dva,starty_driftcorr_dva,degrees = T)$theta %% 360,
+         endr = useful::cart2pol(endx_driftcorr_dva,endy_driftcorr_dva,degrees = T)$r,
+         endtheta = useful::cart2pol(endx_driftcorr_dva,endy_driftcorr_dva,degrees = T)$theta %% 360,
+         diffr = useful::cart2pol(diffx_driftcorr_dva,diffy_driftcorr_dva,degrees = T)$r,
+         difftheta = useful::cart2pol(diffx_driftcorr_dva,diffy_driftcorr_dva,degrees = T)$theta %% 360)
+
+saccade_random = saccade_random %>%
+  mutate(startr = useful::cart2pol(startx_driftcorr_dva,starty_driftcorr_dva,degrees = T)$r,
+         starttheta = useful::cart2pol(startx_driftcorr_dva,starty_driftcorr_dva,degrees = T)$theta %% 360,
+         endr = useful::cart2pol(endx_driftcorr_dva,endy_driftcorr_dva,degrees = T)$r,
+         endtheta = useful::cart2pol(endx_driftcorr_dva,endy_driftcorr_dva,degrees = T)$theta %% 360,
+         diffr = useful::cart2pol(diffx_driftcorr_dva,diffy_driftcorr_dva,degrees = T)$r,
+         difftheta = useful::cart2pol(diffx_driftcorr_dva,diffy_driftcorr_dva,degrees = T)$theta %% 360)
+
+# save preprocessed saccade data
+write_csv(saccade_adapt,file = file.path(datadir,'exp4_saccade_att.csv'))
+write_csv(saccade_fixed,file = file.path(datadir,'exp4_saccade_fixed.csv'))
+write_csv(saccade_random,file = file.path(datadir,'exp4_saccade_random.csv'))
