@@ -16,6 +16,12 @@ gaze_adapt_agg = gaze_adapt %>%
   dplyr::summarise(x_interp_driftcorr_dva = mean(x_interp_driftcorr_dva,na.rm = T),
                    y_interp_driftcorr_dva = mean(y_interp_driftcorr_dva,na.rm = T))
 
+# create 1 dva radius ring around fixation
+angles = seq(0,359,1)
+polardf = data.frame(x = 1 * cos((angles) * (pi/180)),
+                     y = 1 * sin((angles) * (pi/180)),
+                     angle = angles)
+
 ggplot(NULL) + 
   coord_fixed() + 
   xlim(-1.1,10) + 
