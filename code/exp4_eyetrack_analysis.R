@@ -41,8 +41,8 @@ wm_fixed_pct_saccade_df = saccade_fixed %>%
   filter(onset >= 600, # stimulus onset
          onset <= 817, # memory sample (116.67 ms) + 100 ms
          trial > 100, trial <= 776, # adaptation blocks
-         amplitude >= 1, # amplitude > 1 dva
-         (endtheta < 90) | (endtheta >  270)) %>% # right hemifield
+         diffr >= 1, # amplitude > 1 dva
+         (difftheta < 90) | (difftheta >  270)) %>% # right hemifield
   group_by(ID,trial) %>% 
   dplyr::summarise(n = n()) %>% 
   ungroup() %>% 
@@ -61,8 +61,8 @@ wm_fixed_pct_saccade_df = saccade_fixed %>%
   filter(onset >= 600,
          onset <= 817,
          trial >= 529, trial <= 776, # last adaptation block
-         amplitude >= 1,
-         (endtheta < 90) | (endtheta >  270)) %>%
+         diffr >= 1,
+         (difftheta < 90) | (difftheta >  270)) %>%
   group_by(ID,trial) %>% 
   dplyr::summarise(n = n()) %>% 
   ungroup() %>% 
