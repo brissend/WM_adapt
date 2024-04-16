@@ -1,7 +1,6 @@
 # load libraries
 library(gazerjb) # forked and edited version of gazer package
 library(tidyverse)
-library(data.table)
 
 # set environment
 LOCAL = Sys.getenv("LOCAL")
