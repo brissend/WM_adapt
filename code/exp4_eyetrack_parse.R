@@ -1,7 +1,7 @@
 # load libraries
 library(gazerjb) # forked and edited version of gazer package
-library(zoo)
 library(tidyverse)
+library(data.table)
 
 # set environment
 LOCAL = Sys.getenv("LOCAL")
@@ -23,9 +23,9 @@ for (s in seq_along(subs)) {
   
   # extract condition
   if (!file.exists(file.path(datadir,subs[s],paste0(subs[s],'_messages.csv')))) {
-    find_messages_asc_fix(subs[s], 
-                          homeDir = datadir,
-                          vars2extract = 'Condition')
+    find_messages_asc(subs[s], 
+                      homeDir = datadir,
+                      vars2extract = 'Condition')
   }
   
   # merging eye data and behavioral condition files
