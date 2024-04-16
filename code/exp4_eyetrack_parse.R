@@ -1,5 +1,5 @@
 # load libraries
-library(gazerjb) # forked version of gazer package
+library(gazerjb) # forked and edited version of gazer package
 library(zoo)
 library(tidyverse)
 
@@ -16,7 +16,9 @@ for (s in seq_along(subs)) {
   
   # extract samples
   if (!file.exists(file.path(datadir,subs[s],paste0(subs[s],'_saccade.csv')))) {
-    parse_asc(subs[s], homeDir = datadir, overwriteBlinks = F, cutPreview = 0)
+    # original gazer function only extracted gaze data from ascii file
+    # this version extracts gaze, saccade, and fixation data and saves to separate files
+    parse_asc(subs[s], homeDir = datadir, overwriteBlinks = F, cutPreview = 0) 
   }
   
   # extract condition
@@ -50,6 +52,5 @@ for (s in seq_along(subs)) {
     fmdf = full_join(fdf,mdf,by = c('trial','ID')) %>% arrange(.,trial)
     write_csv(fmdf,file = file.path(datadir,subs[s],paste0(subs[s],'_fixation_combined.csv')))
   }
-  
 }
   
