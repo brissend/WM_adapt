@@ -47,6 +47,18 @@ for (s in seq_along(subs)) {
 grpdf = do.call(rbind, grpdf) 
 grprandf = do.call(rbind,grprandf)
 
+# save WM-fixed and WM-random group data frame
+if (!file.exists('WM_adapt/data/exp5/exp5_group_fixed.csv')) {
+  write.csv(grpdf,
+            file = 'WM_adapt/data/exp5/exp5_group_fixed.csv',
+            row.names = F)
+}
+if (!file.exists('WM_adapt/data/exp5/exp5_group_random.csv')) {
+  write.csv(grprandf,
+            file = 'WM_adapt/data/exp5/exp5_group_random.csv',
+            row.names = F)
+}
+
 # compute group average WM-fixed recall
 mndf = grpdf %>% 
   group_by(trial) %>% 
@@ -115,6 +127,13 @@ bf_full/bf_int
 mndf$adaptfit = c(rep(1,85),rep(0,25))
 mndf$trial_adapt = mndf$trial - 100 # renumber so that trial 1 corresponds w/ onset of attentional errors
 mndf$trial_adapt[1:25] = 0 # treat all pre-adapt trials as trial 0
+
+# save group average WM-fixed recall
+if (!file.exists('WM_adapt/data/exp5/exp5_group_mean_fixed.csv')) {
+  write.csv(mndf,
+            file = 'WM_adapt/data/exp5/exp5_group_mean_fixed.csv',
+            row.names = F)
+}
 
 # linear fit
 if (!file.exists('WM_adapt/model_fits/Exp5_linear_fit_group_mean.rds')) {
