@@ -32,7 +32,7 @@ ggplot(blockdiffdf_mean_cl_boot,aes(x = bin,y = y,color = bin,fill = bin)) +
   geom_hline(yintercept = 0,linetype = 'dashed') + 
   geom_linerange(aes(ymin = ymin,ymax = ymax)) + 
   geom_point(size = 5) + 
-  labs( y = 'Recall Error (Block 4 - Block 1)',x = 'WM Random Location Bin (Offset Relative to Adapted Location)') + 
+  labs( y = 'Recall Error (Block 4 - Block 1)',x = 'WM Random Location Bin Distance (°)') + 
   scale_y_continuous(breaks = seq(20,-80,by = -20),labels = paste0(seq(20,-80,by = -20),'%'),limits = c(-80,20)) + 
   theme_classic() + 
   theme(legend.position = 'none')
