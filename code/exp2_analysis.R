@@ -167,6 +167,10 @@ bf_int = lmBF(y ~ subject,
 
 bf_full/bf_int
 
+post_samples = posterior(bf_full,iterations = 10000)
+mean(post_samples[,"x"])  / 0.17 * 100 # slope / backstep_size * 100
+hdi(as.vector(post_samples[,"x"])) / 0.17 * 100
+
 # timecourse model fits
 mndf$adaptfit = c(rep(1,85),rep(0,25))
 mndf$trial = mndf$x - 100 
