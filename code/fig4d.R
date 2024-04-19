@@ -23,7 +23,7 @@ blockdiffdf = ranbindf %>%
   spread(blockNum, error) %>% 
   group_by(subject,bin) %>% 
   mutate(ydiff = `4` - `1`)
-levels(blockdiffdf$bin) =  c('+2','+1' ,'0','-1','-2','-3','-4','-5') #c('-5','-4','-3','-2','-1','0','+1','+2')
+levels(blockdiffdf$bin) =  c('+2','+1' ,'0','-1','-2','-3','-4','-5')
 blockdiffdf$ydiffpct = blockdiffdf$ydiff/3 * 100
 
 # plot
