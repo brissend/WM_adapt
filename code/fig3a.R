@@ -1,7 +1,11 @@
 # load libraries
+library(rstan)
+library(brms)
 library(tidybayes)
 library(tidyverse)
 library(viridis)
+options(mc.cores = parallel::detectCores())
+rstan_options(auto_write = TRUE)
 
 # set environment
 LOCAL = Sys.getenv("LOCAL")
