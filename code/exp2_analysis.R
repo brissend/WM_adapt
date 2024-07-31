@@ -184,7 +184,7 @@ if (!file.exists('WM_adapt/data/exp2/exp2_group_mean_fixed.csv')) {
 }
 
 # linear fit
-if (!file.exists('WM_adapt/model_fits/Exp1_linear_fit_group_mean.rds')) {
+if (!file.exists('WM_adapt/model_fits/Exp2_linear_fit_group_mean.rds')) {
   fit_linear = brm(y ~ trial,
                    data = filter(mndf,adaptfit == 1),
                    prior = set_prior("student_t(1,0,0.2)",class = "b"),
