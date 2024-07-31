@@ -13,7 +13,7 @@ LOCAL = Sys.getenv("LOCAL")
 setwd(LOCAL)
 
 # load data
-subs = paste0('WM_adapt/data/exp3/',list.files('WM_adapt/data/exp3/'))
+subs = paste0('WM_adapt/data/exp3/',list.files('WM_adapt/data/exp3/', pattern = '^data'))
 
 # trial numbers for WM-fixed and WM-random trials for pavlovia output files (difficult to parse via other means)
 fixed_trial_nums =  c(4,   8,  12,  16,  20,  24,  28,  32,  36,  40,  44,  48,  52,  56,  60,  64,  68,  72,  76,  80,  84,  88,  92,  96,
@@ -33,11 +33,13 @@ random_trial_nums = c(1,   2,   3,   5,   6,  7,   9,  10,  11,  13,  14,  15,  
 
 grpdf = list()
 grprandf = list()
+adaptpct = rep(NA,length(subs))
+washoutpct = rep(NA,length(subs))
 for (s in seq_along(subs)) {
   
   subdf = read.csv(subs[s]) 
   
-  subfixeddf = data.frame(y = subdf$probe_slider_fixed.response[subdf$trialCounter %in% fixed_trial_nums],# * ((0.75-0.17)/(0.7-0.17)),
+  subfixeddf = data.frame(y = subdf$probe_slider_fixed.response[subdf$trialCounter %in% fixed_trial_nums],
                      x = fixed_trial_nums,
                      block = factor(c(rep(1,25),rep(2:4,each=20),rep(5,25))),
                      adapt = factor(c(rep('pre-adapt',25),rep('adapt',60),rep('post-adapt',25))))
@@ -54,11 +56,11 @@ for (s in seq_along(subs)) {
   print(sum(!is.na(subdf$key_resp.rt))/660 > 0.75) # Att-adapt response rate
   print(sum(!is.na(subfixeddf$y))/100 > 0.75) # WM-fixed response rate
   print(sum(!is.na(subrandf$y))/100 > 0.75) # WM-random response rate
-  print(mean(df$key_resp.corr,na.rm=T) > (2/3)) # Att-adapt accuracy (including non-response as incorrect)
+  print(mean(subdf$key_resp.corr,na.rm=T) > (2/3)) # Att-adapt accuracy (including non-response as incorrect)
   print(mean(abs(subrandf$y),na.rm=T) < 0.15) # WM-random MAE
-  print(all(df$key_resp_block_break.rt[!is.na(df$key_resp_block_break.rt)]/60 < 10)) # inter-block break time
-  print(df$quiz_slider_1.response[1104] <= 3) # head movement question
-  print(df$quiz_slider_2.response[1104] >= 8) # eye movement question
+  print(all(subdf$key_resp_block_break.rt[!is.na(subdf$key_resp_block_break.rt)]/60 < 10)) # inter-block break time
+  print(subdf$quiz_slider_1.response[1104] <= 3) # head movement question
+  print(subdf$quiz_slider_2.response[1104] >= 8) # eye movement question
   print('')
   
   # add to group list
@@ -80,6 +82,23 @@ for (s in seq_along(subs)) {
 grpdf = do.call(rbind, grpdf) 
 grprandf = do.call(rbind,grprandf)
 
+# save WM-fixed and WM-random group data frame
+if (!file.exists('WM_adapt/data/exp3/exp3_group_fixed.csv')) {
+  write.csv(grpdf,
+            file = 'WM_adapt/data/exp3/exp3_group_fixed.csv',
+            row.names = F)
+}
+if (!file.exists('WM_adapt/data/exp3/exp3_group_random.csv')) {
+  write.csv(grprandf,
+            file = 'WM_adapt/data/exp3/exp3_group_random.csv',
+            row.names = F)
+}
+
+# compute group average WM-fixed recall
+mndf = grpdf %>% group_by(x) %>% dplyr::summarize(y = mean(y,na.rm=T),n = n()) %>% filter(n > 1)
+mndf$block = factor(c(rep(1,25),rep(2:4,each=20),rep(5,25)))
+mndf$phase = factor(c(rep('pre-adapt',25),rep('adapt',60),rep('post-adapt',25)))
+
 # adaptation magnitude (bootstrap SE)
 bootmu = function(sample,i) mean(sample[i])
 set.seed(1111)
@@ -100,3 +119,71 @@ bf_int = lmBF(y ~ subject, whichRandom = "subject",
               data = df_pre_vs_adapt %>% drop_na(y))
 
 bf_full/bf_int
+
+# timecourse model fits
+mndf$adaptfit = c(rep(1,85),rep(0,25))
+mndf$trial = mndf$x - 100 
+mndf$trial[1:25] = 0 # treat all pre-adapt trials as trial 0
+
+# save group average WM-fixed recall
+if (!file.exists('WM_adapt/data/exp3/exp3_group_mean_fixed.csv')) {
+  write.csv(mndf,
+            file = 'WM_adapt/data/exp3/exp3_group_mean_fixed.csv',
+            row.names = F)
+}
+
+# linear fit
+if (!file.exists('WM_adapt/model_fits/Exp3_linear_fit_group_mean.rds')) {
+  fit_linear = brm(y ~ trial,
+                   data = filter(mndf,adaptfit == 1),
+                   prior = set_prior("student_t(1,0,0.2)",class = "b"),
+                   iter = 6000,
+                   warmup = 2000,
+                   chains = 4,
+                   control = list(adapt_delta = 0.8))
+  saveRDS(fit_linear,file = 'WM_adapt/model_fits/Exp3_linear_fit_group_mean.rds')
+} else {
+  fit_linear = readRDS('WM_adapt/model_fits/Exp3_linear_fit_group_mean.rds')
+}
+
+#  single exponential decay fit (Robinson, Soetedjo & Noto, 2006)
+if (!file.exists('WM_adapt/model_fits/Exp3_expdecay_fit_group_mean.rds')) {
+  singleexpprior = prior(normal(0,0.2), nlpar = 'amp') +
+    prior(normal(0,1000),nlpar = "rate",lb=0) + 
+    prior(normal(0.5,0.2),nlpar = "asymptote") 
+  
+  fit_single = brm(bf(y ~ (amp * (2^(-x/rate))) + asymptote, amp + rate + asymptote ~ 1, nl = TRUE),
+                   data = filter(mndf,adaptfit == 1),
+                   prior = singleexpprior,
+                   iter = 6000,
+                   warmup = 2000,
+                   chains = 4,
+                   control = list(adapt_delta = 0.8))
+  saveRDS(fit_single,file = 'WM_adapt/model_fits/Exp3_expdecay_fit_group_mean.rds')
+} else {
+  fit_single = readRDS('WM_adapt/model_fits/Exp3_expdecay_fit_group_mean.rds')
+}
+
+# double exponential
+if (!file.exists('WM_adapt/model_fits/Exp3_dblexpdecay_fit_group_mean.rds')) {
+  dbl_exp_prior = prior(normal(0,0.2), nlpar = 'amp1',lb = 0) +
+    prior(normal(0,0.2), nlpar = 'amp2',lb = 0) + 
+    prior(normal(0,50),nlpar = "rate1",lb = 0) +
+    prior(normal(0,500),nlpar = "rate2",lb = 0) + 
+    prior(normal(0.5,0.2),nlpar = "plateau")
+  
+  fit_dbl = brm(bf(y ~ (amp1 * (2^(-x/rate1))) + (amp2*(2^(-x/rate2))) + plateau , amp1 + amp2 + rate1 + rate2 + plateau ~ 1, nl = TRUE),
+                data = filter(mndf,adaptfit == 1),
+                prior = dbl_exp_prior,
+                iter = 6000,
+                warmup = 2000,
+                chains = 4,
+                control = list(adapt_delta = 0.8))
+  saveRDS(fit_dbl,file = 'WM_adapt/model_fits/Exp3_dblexpdecay_fit_group_mean.rds')
+} else {
+  fit_dbl = readRDS('WM_adapt/model_fits/Exp3_dblexpdecay_fit_group_mean.rds')
+}
+
+# model comparison
+exp3_loo = loo(fit_linear,fit_single,fit_dbl)
+exp3_loo
