@@ -27,6 +27,9 @@ for (s in seq_along(subs)) {
   
   # WM-fixed
   sub_df_fixed = filter(subdf,trialType == 'memory')
+  sub_df_fixed$n1RT = c(rep(NA,25),
+                        subdf[which((subdf$phase == 'adapt') & (subdf$trialType == 'memory'))-1,]$RT,
+                        rep(NA,25))
   grpdf[[s]] = sub_df_fixed
   
   # WM-random
