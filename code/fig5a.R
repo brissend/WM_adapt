@@ -39,7 +39,7 @@ if (!file.exists('WM_adapt/model_fits/Exp4_preadapt_linear_fit_group_mean.rds'))
 mndf$trial_post = mndf$trial - 880 
 if (!file.exists('WM_adapt/model_fits/Exp4_postadapt_linear_fit_group_mean.rds')) {
   
-  fit_postadapt = brm(y ~ trial_post,
+  fit_postadapt = brm(memResponse ~ trial_post,
                       data = filter(mndf,phase == 'post-adapt'),
                       prior = set_prior("student_t(1,0,4)",class = "b"),
                       iter = 6000,
