@@ -203,7 +203,7 @@ if (!file.exists('WM_adapt/model_fits/Exp2_expdecay_fit_group_mean.rds')) {
     prior(normal(0,1000),nlpar = "rate",lb=0) + 
     prior(normal(0.5,0.2),nlpar = "asymptote") 
   
-  fit_single = brm(bf(y ~ (amp * (2^(-x/rate))) + asymptote, amp + rate + asymptote ~ 1, nl = TRUE),
+  fit_single = brm(bf(y ~ (amp * (2^(-trial/rate))) + asymptote, amp + rate + asymptote ~ 1, nl = TRUE),
                    data = filter(mndf,adaptfit == 1),
                    prior = singleexpprior,
                    iter = 6000,
@@ -223,7 +223,7 @@ if (!file.exists('WM_adapt/model_fits/Exp2_dblexpdecay_fit_group_mean.rds')) {
     prior(normal(0,500),nlpar = "rate2",lb = 0) + 
     prior(normal(0.5,0.2),nlpar = "plateau")
   
-  fit_dbl = brm(bf(y ~ (amp1 * (2^(-x/rate1))) + (amp2*(2^(-x/rate2))) + plateau , amp1 + amp2 + rate1 + rate2 + plateau ~ 1, nl = TRUE),
+  fit_dbl = brm(bf(y ~ (amp1 * (2^(-trial/rate1))) + (amp2*(2^(-trial/rate2))) + plateau , amp1 + amp2 + rate1 + rate2 + plateau ~ 1, nl = TRUE),
                 data = filter(mndf,adaptfit == 1),
                 prior = dbl_exp_prior,
                 iter = 6000,
