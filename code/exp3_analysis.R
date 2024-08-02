@@ -42,13 +42,13 @@ for (s in seq_along(subs)) {
   subfixeddf = data.frame(y = subdf$probe_slider_fixed.response[subdf$trialCounter %in% fixed_trial_nums],
                      x = fixed_trial_nums,
                      block = factor(c(rep(1,25),rep(2:4,each=20),rep(5,25))),
-                     adapt = factor(c(rep('pre-adapt',25),rep('adapt',60),rep('post-adapt',25))))
+                     phase = factor(c(rep('pre-adapt',25),rep('adapt',60),rep('post-adapt',25))))
   
   subrandf = data.frame(y = subdf$probe_slider_random.response[subdf$trialCounter %in% random_trial_nums] -
                           subdf$memTargetPos[subdf$trialCounter %in% random_trial_nums],
                         x = random_trial_nums,
                         block = factor(c(rep(1,75),rep(2:4,each=20),rep(5,75))),
-                        adapt = factor(c(rep('pre-adapt',75),rep('adapt',60),rep('post-adapt',75))),
+                        phase = factor(c(rep('pre-adapt',75),rep('adapt',60),rep('post-adapt',75))),
                         memTargetPos = subdf$memTargetPos[subdf$trialCounter %in% random_trial_nums])
   
   # data quality check
