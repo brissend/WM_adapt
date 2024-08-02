@@ -7,7 +7,7 @@ LOCAL = Sys.getenv("LOCAL")
 setwd(LOCAL)
 
 # load gaze data
-gaze_adapt = read_csv('WM_adapt/data/exp4/exp4_gaze_att.csv'))
+gaze_adapt = read_csv('WM_adapt/data/exp4/exp4_gaze_att.csv')
 
 # gaze density plot
 gaze_adapt_agg = gaze_adapt %>% 
