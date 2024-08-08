@@ -104,6 +104,10 @@ bootmu = function(sample,i) mean(sample[i])
 set.seed(1111)
 boot(adaptpct,bootmu,100)
 
+# washout magnitude
+set.seed(1111)
+boot(washoutpct,bootmu,100)
+
 # Bayes factor analysis comparing 1st and last block
 set.seed(1111)
 df_pre_vs_adapt = filter(grpdf,block %in% c(1,4)) %>% droplevels()
@@ -119,6 +123,62 @@ bf_int = lmBF(y ~ subject, whichRandom = "subject",
               data = df_pre_vs_adapt %>% drop_na(y))
 
 bf_full/bf_int
+
+# Bayes factor analysis comparing last adaptation block and post-adaptation block
+set.seed(1111)
+df_adapt_vs_post = filter(grpdf,block %in% c(4,5)) %>% droplevels()
+df_adapt_vs_post$block = factor(df_adapt_vs_post$block)
+df_adapt_vs_post$subject = factor(df_adapt_vs_post$subject)
+
+bf_full = lmBF(y ~ block + subject, 
+               whichRandom = "subject",
+               rscaleRandom = 'nuisance',
+               data = df_adapt_vs_post %>% drop_na(y))
+bf_int = lmBF(y ~ subject, whichRandom = "subject",
+              rscaleRandom = 'nuisance',
+              data = df_adapt_vs_post %>% drop_na(y))
+
+bf_full/bf_int
+
+# individual subject Bayes factor analysis comparing last adaptation block and post-adaptation block
+bf_sub = rep(NA,length(subs))
+for (ii in unique(grpdf$subject)) {
+  df_sub = filter(grpdf,
+                  subject == unique(grpdf$subject)[ii],
+                  block %in% c(4,5)) %>% 
+    droplevels()
+  
+  bf_sub[ii] = lmBF(y ~ block, 
+                    data = df_sub %>% drop_na(y))
+  
+}
+
+# Bayes factor examining linear effect of trial in post-adapt phase
+set.seed(1111)
+grpdf$subject = factor(grpdf$subject)
+bf_full = lmBF(y ~ x + subject,
+               whichRandom = "subject",
+               data = filter(grpdf,block == 5) %>% drop_na(y))
+bf_int = lmBF(y ~ subject,
+              whichRandom = "subject",
+              data = filter(grpdf,block == 5) %>% drop_na(y))
+
+bf_full/bf_int
+
+post_samples = posterior(bf_full,iterations = 10000)
+mean(post_samples[,"x"])  / 0.17 * 100 # slope / backstep_size * 100
+hdi(as.vector(post_samples[,"x"])) / 0.17 * 100
+
+# individual subject Bayes factor analysis examining linear effect of trial during post-adapt phase
+bf_sub = list()
+for (ii in 1:length(unique(grpdf$subject))) {
+  bf_sub[[ii]] = lmBF(y ~ x,
+                      data = filter(grpdf,subject == unique(grpdf$subject)[ii],block == 5) %>% drop_na(y))
+  
+  post_samples = posterior(bf_sub[[ii]],iterations = 10000)
+  print(mean(post_samples[,"x"])  / 0.17 * 100) # slope / backstep_size * 100
+  print(hdi(as.vector(post_samples[,"x"])) / 0.17 * 100)
+}
 
 # timecourse model fits
 mndf$adaptfit = c(rep(1,85),rep(0,25))
