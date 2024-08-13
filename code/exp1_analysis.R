@@ -68,14 +68,28 @@ for (s in seq_along(subs)) {
   
   # data quality check
   print(subs[s])
-  print(sum(!is.na(subdf$key_resp.rt))/1100 > (2/3)) # Att-error response rate
-  print(sum(!is.na(subfixeddf$y))/100 > (2/3)) # WM-fixed response rate
-  print(sum(!is.na(subrandf$y))/100 > (2/3)) # WM-random response rate
-  print(mean(subdf$key_resp.corr,na.rm=T) > (2/3)) # Att-error accuracy (including non-response as incorrect)
-  print(mean(abs(subrandf$y),na.rm=T) < 0.15) # WM-random MAE
-  print(all(subdf$key_resp_block_break.rt[!is.na(subdf$key_resp_block_break.rt)]/60 < 10)) # inter-block break time
-  print(subdf$quiz_slider_1.response[1411] < 3) # head movement question
-  print(subdf$quiz_slider_2.response[1411] >= 8) # eye movement question
+  print(s)
+  include = c(sum(!is.na(subdf$key_resp.rt))/1100 > (2/3), # Att-error response rate
+              sum(!is.na(subfixeddf$y))/100 > (2/3), # WM-fixed response rate
+              sum(!is.na(subrandf$y))/100 > (2/3), # WM-random response rate
+              mean(subdf$key_resp.corr,na.rm=T) > (2/3), # Att-error accuracy (including non-response as incorrect)
+              mean(abs(subrandf$y),na.rm=T) < 0.15, # WM-random MAE
+              all(subdf$key_resp_block_break.rt[!is.na(subdf$key_resp_block_break.rt)]/60 < 10), # inter-block break time
+              subdf$quiz_slider_1.response[1411] < 3, # head movement question
+              subdf$quiz_slider_2.response[1411] >= 8) # eye movement question
+  include[is.na(include)] = FALSE
+
+  print(include)
+  if (!all(include)) next
+  # 
+  # print(sum(!is.na(subdf$key_resp.rt))/1100 > (2/3)) # Att-error response rate
+  # print(sum(!is.na(subfixeddf$y))/100 > (2/3)) # WM-fixed response rate
+  # print(sum(!is.na(subrandf$y))/100 > (2/3)) # WM-random response rate
+  # print(mean(subdf$key_resp.corr,na.rm=T) > (2/3)) # Att-error accuracy (including non-response as incorrect)
+  # print(mean(abs(subrandf$y),na.rm=T) < 0.15) # WM-random MAE
+  # print(all(subdf$key_resp_block_break.rt[!is.na(subdf$key_resp_block_break.rt)]/60 < 10)) # inter-block break time
+  # print(subdf$quiz_slider_1.response[1411] < 3) # head movement question
+  # print(subdf$quiz_slider_2.response[1411] >= 8) # eye movement question
   print('')
   
   # add to group list
@@ -119,6 +133,9 @@ if (!file.exists('WM_adapt/data/exp1/exp1_group_mean_fixed.csv')) {
             row.names = F,
             col.names = T)
 }
+
+# remove NAs (excluded participants) from adaptpct
+adaptpct = adaptpct[!is.na(adaptpct)]
 
 # adaptation magnitude (bootstrap SE)
 set.seed(1111)
