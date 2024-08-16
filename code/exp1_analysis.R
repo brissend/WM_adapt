@@ -161,6 +161,7 @@ bf_full/bf_int
 # timecourse model fits
 # linear fit
 if (!file.exists('WM_adapt/model_fits/Exp1_linear_fit_group_mean.rds')) {
+  set.seed(1111)
   fit_linear = brm(y ~ x,
                    data = mndf,
                    prior = set_prior("student_t(1,0,0.2)",class = "b"),
