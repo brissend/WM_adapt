@@ -29,8 +29,8 @@ ggplot(blockdiffdf,aes(x = bin,y = ydiff,color = bin)) +
   stat_summary(fun=mean, geom="point", shape=23, size=2, color="red", fill="red") + 
   stat_summary(fun.data = "mean_cl_boot", size = 1) + 
   labs( y = 'Recall Error (Block 5 - Block 1)',x = 'WM Random Location Bin Distance') + 
-  scale_y_continuous(breaks = seq(0.017,-0.051,by = -0.017),labels = paste0(seq(10,-30,by=-10),'%')) +
-  coord_cartesian(ylim = c(-0.053,0.017)) + 
+  scale_y_continuous(breaks = seq(0.017,-0.051,by = -0.017),labels = paste0(seq(10,-30,by=-10),'%')) + 
+  coord_cartesian(ylim = c(-0.0595,0.017)) + 
   theme_classic() + 
   theme(legend.position = 'none')
 
