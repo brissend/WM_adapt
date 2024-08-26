@@ -1,6 +1,7 @@
 # load libraries
 library(tidyverse)
 library(boot)
+library(BayesFactor)
 
 # set environment
 LOCAL = Sys.getenv("LOCAL")
