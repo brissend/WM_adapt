@@ -87,7 +87,7 @@ correlationBF(adaptpct,washoutpct)
 # Bayes Factor analysis comparing pre-adapt block and last adaptation block
 set.seed(1111)
 df_pre_vs_adapt = filter(grpdf,blockNum %in% c(1,4)) %>% droplevels()
-df_pre_vs_adapt$block = factor(df_pre_vs_adapt$blockNum)
+df_pre_vs_adapt$blockNum = factor(df_pre_vs_adapt$blockNum)
 df_pre_vs_adapt$subject = factor(df_pre_vs_adapt$subject)
 
 bf_full = lmBF(memResponse ~ blockNum + subject, 
@@ -103,7 +103,7 @@ bf_full/bf_int
 # Bayes Factor analysis comparing last adaptation block and post-adaptation block
 set.seed(1111)
 df_adapt_vs_post = filter(grpdf,blockNum %in% c(4,5)) %>% droplevels()
-df_adapt_vs_post$block = factor(df_adapt_vs_post$blockNum)
+df_adapt_vs_post$blockNum = factor(df_adapt_vs_post$blockNum)
 df_adapt_vs_post$subject = factor(df_adapt_vs_post$subject)
 
 bf_full = lmBF(memResponse ~ blockNum + subject, 

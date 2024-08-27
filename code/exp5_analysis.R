@@ -84,7 +84,7 @@ correlationBF(adaptpct,washoutpct)
 # Bayes Factor analysis comparing pre-adapt block and last adaptation block
 set.seed(1111)
 df_pre_vs_adapt = filter(grpdf,blockNum %in% c(1,4)) %>% droplevels()
-df_pre_vs_adapt$block = factor(df_pre_vs_adapt$blockNum)
+df_pre_vs_adapt$blockNum = factor(df_pre_vs_adapt$blockNum)
 df_pre_vs_adapt$subject = factor(df_pre_vs_adapt$subject)
 
 bf_full = lmBF(memResponse ~ blockNum + subject, 
@@ -226,3 +226,26 @@ post_samples = posterior(bf_full,iterations = 10000)
 mean(post_samples[,"abs_bin_pos"]) * 1 / 3 * 100 # slope * bin_distance / backstep_size * 100
 hdi(as.vector(post_samples[,"abs_bin_pos"])) * 1 / 3 * 100
 
+# exp 4 and 5 combined analysis
+grpdf4 = read.csv('WM_adapt/data/exp4/exp4_group_fixed.csv')
+grpdf5 = read.csv('WM_adapt/data/exp5/exp5_group_fixed.csv')
+grpdf4$hemifield = 'Right'
+grpdf5$hemifield = 'Left'
+grpdf5$memResponse = grpdf5$memResponse * -1 # flip sign
+grpdf = rbind(grpdf4,grpdf5)
+
+set.seed(1111)
+df_pre_vs_adapt = filter(grpdf,blockNum %in% c(1,4)) %>% droplevels()
+df_pre_vs_adapt$blockNum = factor(df_pre_vs_adapt$blockNum)
+df_pre_vs_adapt$subject = factor(df_pre_vs_adapt$subject)
+df_pre_vs_adapt$hemifield = factor(df_pre_vs_adapt$hemifield)
+
+bf_full = lmBF(memResponse ~ blockNum*hemifield + subject, 
+               whichRandom = "subject",
+               rscaleRandom = 'nuisance',
+               data = df_pre_vs_adapt %>% drop_na(memResponse))
+bf_sub = lmBF(memResponse ~ blockNum + hemifield + subject, whichRandom = "subject",
+              rscaleRandom = 'nuisance',
+              data = df_pre_vs_adapt %>% drop_na(memResponse))
+
+bf_full/bf_int
