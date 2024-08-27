@@ -244,8 +244,14 @@ bf_full = lmBF(memResponse ~ blockNum*hemifield + subject,
                whichRandom = "subject",
                rscaleRandom = 'nuisance',
                data = df_pre_vs_adapt %>% drop_na(memResponse))
-bf_sub = lmBF(memResponse ~ blockNum + hemifield + subject, whichRandom = "subject",
+bf_main = lmBF(memResponse ~ blockNum + hemifield + subject, whichRandom = "subject",
               rscaleRandom = 'nuisance',
               data = df_pre_vs_adapt %>% drop_na(memResponse))
+bf_full/bf_main
 
-bf_full/bf_int
+post_samples = posterior(bf_full,iterations = 10000)
+summary(post_samples)
+rightdiff = post_samples[,"blockNum:hemifield-4.&.Right"] - post_samples[,"blockNum:hemifield-1.&.Right"]
+leftdiff = post_samples[,"blockNum:hemifield-4.&.Left"] - post_samples[,"blockNum:hemifield-1.&.Left"]
+mean(rightdiff - leftdiff) / 3 * 100
+hdi(as.vector(rightdiff - leftdiff)) / 3 * 100
