@@ -86,7 +86,7 @@ if (!file.exists('WM_adapt/data/exp4/exp4_group_mean_fixed.csv')) {
 mndf = read.csv('WM_adapt/data/exp4/exp4_group_mean_fixed.csv')
 
 if (!file.exists('WM_adapt/data/exp4/exp4_group_fixed.csv')) {
-  source('WM_adapt/code/exp4_analysis.R') # group average recall computed and saved by this script
+  source('WM_adapt/code/exp4_analysis.R') # group recall computed and saved by this script
 }
 grpdf = read.csv('WM_adapt/data/exp4/exp4_group_fixed.csv')
 
