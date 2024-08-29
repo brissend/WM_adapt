@@ -153,7 +153,7 @@ if (!file.exists('WM_adapt/model_fits/Exp5_linear_fit_group_mean.rds')) {
 if (!file.exists('WM_adapt/model_fits/Exp5_expdecay_fit_group_mean.rds')) {
   singleexpprior = prior(normal(0,5), nlpar = 'amp') +
     prior(normal(0,1000),nlpar = "rate",lb=0) +
-    prior(normal(9,5),nlpar = "asymptote")
+    prior(normal(-9,5),nlpar = "asymptote")
   
   fit_single = brm(bf(memResponse ~ (amp * (2^(-trial_adapt/rate))) + asymptote, amp + rate + asymptote ~ 1, nl = TRUE),
                    data = filter(mndf,adaptfit == 1),
@@ -173,7 +173,7 @@ if (!file.exists('WM_adapt/model_fits/Exp5_dblexpdecay_fit_group_mean.rds')) {
     prior(normal(0,5), nlpar = 'amp2') + 
     prior(normal(0,50),nlpar = "rate1",lb = 0) +
     prior(normal(0,1000),nlpar = "rate2",lb = 0) + 
-    prior(normal(9,5),nlpar = "plateau")
+    prior(normal(-9,5),nlpar = "plateau")
   
   fit_dbl = brm(bf(memResponse ~ (amp1 * (2^(-trial_adapt/rate1))) + (amp2*(2^(-trial_adapt/rate2))) + plateau , amp1 + amp2 + rate1 + rate2 + plateau ~ 1, nl = TRUE),
                 data = filter(mndf,adaptfit == 1),
