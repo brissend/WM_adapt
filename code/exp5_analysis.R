@@ -27,6 +27,13 @@ for (s in seq_along(subs)) {
   
   # WM-fixed
   sub_df_fixed = filter(subdf,trialType == 'memory')
+  sub_df_fixed$n1RT = c(rep(NA,25),
+                        subdf[which((subdf$phase == 'adapt') & (subdf$trialType == 'memory'))-1,]$RT,
+                        rep(NA,25))
+  sub_df_fixed$n1acc = c(rep(NA,25),
+                         subdf[which((subdf$phase == 'adapt') & (subdf$trialType == 'memory'))-1,]$adaptCorrect,
+                         rep(NA,25))
+  sub_df_fixed$memDiff = c(0,diff(sub_df_fixed$memResponse))
   grpdf[[s]] = sub_df_fixed
   
   # WM-random
@@ -122,6 +129,35 @@ bf_int = lmBF(memResponse ~ subject,
               data = filter(grpdf,phase == 'pre-adapt') %>% drop_na(memResponse))
 
 bf_full/bf_int
+
+# Bayes factor analysis examining effect n-1 Att-error trial performance on adaptation
+grpdf$subject = factor(grpdf$subject)
+set.seed(1111)
+bf_full = lmBF(memDiff ~ n1RT + subject, 
+               whichRandom = 'subject',
+               rscaleRandom = 'nuisance',
+               data = grpdf %>% drop_na(memDiff,n1RT))
+
+bf_int = lmBF(memDiff ~ subject, 
+              whichRandom = "subject",
+              rscaleRandom = 'nuisance',
+              data = grpdf %>% drop_na(memDiff,n1RT))
+
+bf_full/bf_int
+
+set.seed(1111)
+bf_full = lmBF(memDiff ~ n1acc + subject, 
+               whichRandom = 'subject',
+               rscaleRandom = 'nuisance',
+               data = grpdf %>% drop_na(memDiff,n1acc))
+
+bf_int = lmBF(memDiff ~ subject, 
+              whichRandom = "subject",
+              rscaleRandom = 'nuisance',
+              data = grpdf %>% drop_na(memDiff,n1acc))
+
+bf_full/bf_int
+
 
 # timecourse model fits
 mndf$adaptfit = c(rep(1,85),rep(0,25))
