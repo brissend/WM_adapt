@@ -35,14 +35,47 @@ grpdf = list()
 grprandf = list()
 adaptpct = rep(NA,length(subs))
 washoutpct = rep(NA,length(subs))
+prepostpct = rep(NA,length(subs))
 for (s in seq_along(subs)) {
   
   subdf = read.csv(subs[s]) 
   
+  # compute accuracy for attention trials immediately prior to fixed WM trial
+  attaccuracy = rep(NA, length(fixed_trial_nums))
+  attrt = rep(NA,length(fixed_trial_nums))
+  n1attaccuracy = rep(NA,length(fixed_trial_nums))
+  n1attrt = rep(NA, length(fixed_trial_nums))
+  for (t in seq_along(fixed_trial_nums)) {
+    
+    if ((fixed_trial_nums[t] > 100) & (fixed_trial_nums[t] < 881)) {
+      # mean accuracy and RT
+      if (t == 1) {
+        attaccuracy[t] = mean(subdf$key_resp.corr[subdf$trialCounter < fixed_trial_nums[t]],na.rm = T)
+        attrt[t] = mean(subdf$key_resp.rt[subdf$trialCounter < fixed_trial_nums[t]],na.rm = T)
+      } else {
+        attaccuracy[t] = mean(subdf$key_resp.corr[(subdf$trialCounter < fixed_trial_nums[t]) & (subdf$trialCounter > fixed_trial_nums[t-1])],
+                              na.rm=T)
+        attrt[t] = mean(subdf$key_resp.rt[(subdf$trialCounter < fixed_trial_nums[t]) & (subdf$trialCounter > fixed_trial_nums[t-1])],
+                        na.rm=T)
+      }
+      
+      
+      # previous trial accuracy and RT
+      n1attaccuracy[t] = subdf$key_resp.corr[fixed_trial_nums[t]-1]
+      n1attrt[t] = subdf$key_resp.rt[fixed_trial_nums[t]-1]
+    } 
+  }
+  
+  
   subfixeddf = data.frame(y = subdf$probe_slider_fixed.response[subdf$trialCounter %in% fixed_trial_nums],
-                     x = fixed_trial_nums,
-                     block = factor(c(rep(1,25),rep(2:4,each=20),rep(5,25))),
-                     phase = factor(c(rep('pre-adapt',25),rep('adapt',60),rep('post-adapt',25))))
+                          ydiff = c(0,diff(subdf$probe_slider_fixed.response[subdf$trialCounter %in% fixed_trial_nums])),
+                          x = fixed_trial_nums,
+                          block = factor(c(rep(1,25),rep(2:4,each=20),rep(5,25))),
+                          phase = factor(c(rep('pre-adapt',25),rep('adapt',60),rep('post-adapt',25))),
+                          attacc = attaccuracy,
+                          mnrt = attrt,
+                          n1attacc = n1attaccuracy,
+                          n1rt = n1attrt)
   
   subrandf = data.frame(y = subdf$probe_slider_random.response[subdf$trialCounter %in% random_trial_nums] -
                           subdf$memTargetPos[subdf$trialCounter %in% random_trial_nums],
@@ -76,6 +109,7 @@ for (s in seq_along(subs)) {
   block5 = tmp[5]
   adaptpct[s] = (block4 - block1)/0.17
   washoutpct[s] = (block5 - block4)/0.17
+  prepostpct[s] = (block5 - block1)/0.17
 }
 
 # concatenate subjects into single data frame
