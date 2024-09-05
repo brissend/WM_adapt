@@ -38,10 +38,40 @@ washoutpct = rep(NA,length(subs))
 for (s in seq_along(subs)) {
   subdf = read.csv(subs[s]) 
   
+  # compute accuracy for attention trials immediately prior to fixed WM trial
+  attaccuracy = rep(NA, length(fixed_trial_nums))
+  attrt = rep(NA,length(fixed_trial_nums))
+  n1attaccuracy = rep(NA,length(fixed_trial_nums))
+  n1attrt = rep(NA, length(fixed_trial_nums))
+  for (t in seq_along(fixed_trial_nums)) {
+    
+    if ((fixed_trial_nums[t] > 100) & (fixed_trial_nums[t] < 881)) {
+      # mean accuracy and RT
+      if (t == 1) {
+        attaccuracy[t] = mean(subdf$key_resp.corr[subdf$trialCounter < fixed_trial_nums[t]],na.rm = T)
+        attrt[t] = mean(subdf$key_resp.rt[subdf$trialCounter < fixed_trial_nums[t]],na.rm = T)
+      } else {
+        attaccuracy[t] = mean(subdf$key_resp.corr[(subdf$trialCounter < fixed_trial_nums[t]) & (subdf$trialCounter > fixed_trial_nums[t-1])],
+                              na.rm=T)
+        attrt[t] = mean(subdf$key_resp.rt[(subdf$trialCounter < fixed_trial_nums[t]) & (subdf$trialCounter > fixed_trial_nums[t-1])],
+                        na.rm=T)
+      }
+      
+      
+      # previous trial accuracy and RT
+      n1attaccuracy[t] = subdf$key_resp.corr[fixed_trial_nums[t]-1]
+      n1attrt[t] = subdf$key_resp.rt[fixed_trial_nums[t]-1]
+    } 
+  }
+  
   subfixeddf = data.frame(y = subdf$probe_slider_fixed.response[subdf$trialCounter %in% fixed_trial_nums],
                      x = fixed_trial_nums,
                      block = factor(c(rep(1,25),rep(2:4,each=20),rep(5,25))),
-                     phase = factor(c(rep('pre-adapt',25),rep('adapt',60),rep('post-adapt',25))))
+                     phase = factor(c(rep('pre-adapt',25),rep('adapt',60),rep('post-adapt',25))),
+                     attacc = attaccuracy,
+                     mnrt = attrt,
+                     n1attacc = n1attaccuracy,
+                     n1rt = n1attrt)
   
   
   # fix scale of fixed response
@@ -52,7 +82,10 @@ for (s in seq_along(subs)) {
   # formula: ((val - origmin)/(origmax - origmin)) * (scalemax - scalemin) + scalemin
   subfixeddf$y = ((subfixeddf$y - 0.17) / (0.7 - 0.17)) * (0.75 - 0.17) + 0.17
   
+  # compute recall difference between successive WM-fixed trials
+  subfixeddf$ydiff = c(0,diff(subdf$probe_slider_fixed.response[subdf$trialCounter %in% fixed_trial_nums]))
   
+  # WM-random
   subrandf = data.frame(y = subdf$probe_slider_random.response[subdf$trialCounter %in% random_trial_nums] -
                           subdf$memTargetPos[subdf$trialCounter %in% random_trial_nums],
                         x = random_trial_nums,
@@ -187,6 +220,34 @@ bf_full/bf_int
 post_samples = posterior(bf_full,iterations = 10000)
 mean(post_samples[,"x"])  / 0.17 * 100 # slope / backstep_size * 100
 hdi(as.vector(post_samples[,"x"])) / 0.17 * 100
+
+# Bayes factor analysis examining effect n-1 Att-error trial performance on adaptation
+grpdf$subject = factor(grpdf$subject)
+set.seed(1111)
+bf_full = lmBF(ydiff ~ n1rt + subject, 
+               whichRandom = 'subject',
+               rscaleRandom = 'nuisance',
+               data = grpdf %>% drop_na(ydiff,n1rt))
+
+bf_int = lmBF(ydiff ~ subject, 
+              whichRandom = "subject",
+              rscaleRandom = 'nuisance',
+              data = grpdf %>% drop_na(ydiff,n1rt))
+
+bf_full/bf_int
+
+set.seed(1111)
+bf_full = lmBF(ydiff ~ n1attacc + subject, 
+               whichRandom = 'subject',
+               rscaleRandom = 'nuisance',
+               data = grpdf %>% drop_na(ydiff,n1attacc))
+
+bf_int = lmBF(ydiff ~ subject, 
+              whichRandom = "subject",
+              rscaleRandom = 'nuisance',
+              data = grpdf %>% drop_na(ydiff,n1attacc))
+
+bf_full/bf_int
 
 # timecourse model fits
 mndf$adaptfit = c(rep(1,85),rep(0,25))
