@@ -8,3 +8,14 @@ The data supporting the findings of this study are available at https://osf.io/e
 ### Analysis ###
 Install data from the link above into a directory named `./data`. The analyses and figures presented in the manuscript can be recreated by executing the respective R scripts (e.g. `exp1_analysis.R`) in `./code`.
 
+### Required Packages ###
+`brms`  
+`rstan`   
+`BayesFactor`  
+`tidyverse`  
+`tidybayes`  
+`boot`  
+`gazerjb` (https://github.com/brissend/gazerjb)  
+
+
+
