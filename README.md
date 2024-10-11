@@ -10,16 +10,22 @@ Install data from the link above into a directory named `./data`. The analyses a
 
 ### Required Packages ###
 `brms` (2.21.0)  
-`rstan` (2.32.6)   
+
+`rstan` (2.32.6) 
+
 `BayesFactor` (0.9.12.4.7)  
+
 `tidyverse` (2.0.0)  
   - `ggplot` (3.5.1)  
   - `dplyr` (1.1.4)  
   - `readr` (2.1.5)
+
  
-`tidybayes` (3.0.6)    
+`tidybayes` (3.0.6)   
+
 `boot` (1.3.30)  
-`gazerjb` (https://github.com/brissend/gazerjb)  
+
+`gazerjb` (0.0.1.2; https://github.com/brissend/gazerjb)  
 
 
 
