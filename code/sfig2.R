@@ -120,7 +120,7 @@ ggplot(grpdf,aes(x = x, y = (y - 0.5) / 0.17 * 100 ),group = phase) +
   geom_line(data = fitdf,size = 1,aes(x = x, y = (y - 0.5)/0.17 * 100, group = phase)) + 
   geom_hline(yintercept = 0,linetype = 'dashed') + 
   scale_color_viridis(discrete = T ,begin = 0.05,end = 0.95) + 
-  labs(color = 'Block',y = 'Reported Location (% of Backstep)', x = 'Trial') +
+  labs(color = 'Block',y = 'Recall Location (% of Backstep)', x = 'Trial') +
   facet_wrap(vars(subject),nrow = 8,ncol = 5,scales = 'free_y') + 
   theme_classic() +
   theme(legend.position = 'none')
