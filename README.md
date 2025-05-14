@@ -1,5 +1,5 @@
 # Errors of attention adaptively warp spatial cognition
-This repository contains analysis code supporting Brissenden, Yin, Vesia, and Lee (2025) Nature Human Behaviour (https://doi.org/10.1038/s41562-025-02109-5)
+This repository contains analysis code supporting Brissenden, Yin, Vesia, and Lee (2025) *Nature Human Behaviour* (https://doi.org/10.1038/s41562-025-02109-5)
 
 ## Usage ##
 ### Data ###
